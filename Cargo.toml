@@ -1,0 +1,17 @@
+[package]
+name = "metis-rs"
+version = "0.1.0"
+edition = "2021"
+links = "metis"
+
+[dependencies]
+cxx = "1.0.94"
+log = "0.4.17"
+
+[dev-dependencies]
+env_logger = "0.10.0"
+
+[build-dependencies]
+bindgen = "0.64.0"
+cmake = "0.1.50"
+cxx-build = "1.0.94"
