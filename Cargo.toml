@@ -7,6 +7,7 @@ links = "metis"
 [dependencies]
 cxx = "1.0.94"
 log = "0.4.17"
+thiserror = "1.0.40"
 
 [dev-dependencies]
 env_logger = "0.10.0"

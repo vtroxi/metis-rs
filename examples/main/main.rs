@@ -1,4 +1,4 @@
-use metis_rs::Graph;
+use metis_rs::{Graph, PartitioningConfig};
 use std::fs::File;
 use std::time;
 
@@ -7,15 +7,9 @@ fn main() {
     let mut graph =
         Graph::deserialize_metis(&mut File::open("graphs/4elt.graph").unwrap()).unwrap();
     let t1 = time::Instant::now();
-    // graph.partition_annealing(
-    //     &AnnealingPartitioningConfig {
-    //         initial_partitioning: InitialPartitioningMethod::Bfs,
-    //         ..Default::default()
-    //     },
-    //     4,
-    // );
-    graph.partition(4);
+    graph.partition(&PartitioningConfig::default(), 64).unwrap();
     println!("time: {}ms", t1.elapsed().as_millis());
+    println!("edge cut {}", graph.calculate_edge_cut());
     let infos = graph.partition_info();
     println!(
         "partitions: {}, with sizes from {} to {} with an average of {})",

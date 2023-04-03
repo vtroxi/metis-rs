@@ -1,12 +1,5 @@
-use crate::{
-    idx_t, moptions_et_METIS_OPTION_UFACTOR, real_t, METIS_PartGraphKway, METIS_SetDefaultOptions,
-    METIS_NOPTIONS,
-};
-use cxx::u;
 use std::collections::{HashSet, VecDeque};
-use std::ffi::{c_int, c_void};
 use std::io::{BufRead, BufReader, Read};
-use std::ptr::null_mut;
 
 #[derive(Copy, Clone, Debug)]
 pub struct GraphEdge {
