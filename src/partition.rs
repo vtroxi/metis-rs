@@ -9,11 +9,10 @@ use crate::{
     moptions_et_METIS_OPTION_PFACTOR, moptions_et_METIS_OPTION_RTYPE,
     moptions_et_METIS_OPTION_SEED, moptions_et_METIS_OPTION_UFACTOR, mrtype_et_METIS_RTYPE_FM,
     mrtype_et_METIS_RTYPE_GREEDY, mrtype_et_METIS_RTYPE_SEP1SIDED, mrtype_et_METIS_RTYPE_SEP2SIDED,
-    rstatus_et_METIS_ERROR, rstatus_et_METIS_ERROR_INPUT, rstatus_et_METIS_ERROR_MEMORY,
+    real_t, rstatus_et_METIS_ERROR, rstatus_et_METIS_ERROR_INPUT, rstatus_et_METIS_ERROR_MEMORY,
     rstatus_et_METIS_OK, Graph, METIS_PartGraphKway, METIS_PartGraphRecursive,
     METIS_SetDefaultOptions, METIS_NOPTIONS,
 };
-use cxx::u;
 use std::ptr::null_mut;
 use thiserror::Error;
 
@@ -79,7 +78,7 @@ pub enum RefinementAlgorithm {
 /// Configuration for METIS graph partitioning.
 /// Used to select an algorithm and configure METIS options.
 /// [`None`] values correspond to the default METIS option.
-pub struct PartitioningConfig {
+pub struct PartitioningConfig<'a> {
     /// Specifies the used algorithm.
     pub method: PartitioningMethod,
     /// Specifies the matching scheme to be used during coarsening
@@ -129,9 +128,11 @@ pub struct PartitioningConfig {
     /// Specifies the maximum allowed load imbalance among the partitions. (See manual.pdf for details)
     /// `METIS_OPTION_UFACTOR`
     pub u_factor: Option<i32>,
+    /// Weights for the partitions.
+    pub weights: Option<&'a [f32]>,
 }
 
-impl Default for PartitioningConfig {
+impl<'a> Default for PartitioningConfig<'a> {
     fn default() -> Self {
         Self {
             method: PartitioningMethod::MultilevelKWay,
@@ -149,11 +150,12 @@ impl Default for PartitioningConfig {
             order_contiguous_components: None,
             p_factor: None,
             u_factor: None,
+            weights: None,
         }
     }
 }
 
-impl PartitioningConfig {
+impl<'a> PartitioningConfig<'a> {
     fn apply(&self, options: &mut [idx_t]) {
         if let Some(x) = self.coarsening {
             options[moptions_et_METIS_OPTION_CTYPE as usize] = match x {
@@ -232,6 +234,8 @@ impl PartitioningConfig {
 
 #[derive(Error, Debug)]
 pub enum PartitioningError {
+    #[error("number weights did not correspond to partition count")]
+    WeightsMismatch,
     #[error("erroneous inputs and/or options")]
     Input,
     #[error("insufficient memory")]
@@ -241,6 +245,7 @@ pub enum PartitioningError {
 }
 
 impl Graph {
+    /// Partitions the graph using METIS.
     pub fn partition(
         &mut self,
         config: &PartitioningConfig,
@@ -258,6 +263,17 @@ impl Graph {
             }
         }
         adjacency_idx.push(adjacency.len() as idx_t);
+
+        let mut weights = Vec::new();
+        if let Some(cw) = &config.weights {
+            if cw.len() != partitions as usize {
+                return Err(PartitioningError::WeightsMismatch);
+            }
+            weights.reserve(partitions as usize);
+            for &w in cw.iter() {
+                weights.push(w as real_t);
+            }
+        }
 
         let mut part = vec![0 as idx_t; self.vertices.len()];
         let mut edge_cut = 0 as idx_t;
@@ -281,7 +297,11 @@ impl Graph {
                     null_mut(),
                     adjacency_weight.as_mut_ptr(),
                     &mut nparts,
-                    null_mut(),
+                    if weights.is_empty() {
+                        null_mut()
+                    } else {
+                        weights.as_mut_ptr()
+                    },
                     null_mut(),
                     options.as_mut_ptr(),
                     &mut edge_cut,
@@ -299,7 +319,11 @@ impl Graph {
                     null_mut(),
                     adjacency_weight.as_mut_ptr(),
                     &mut nparts,
-                    null_mut(),
+                    if weights.is_empty() {
+                        null_mut()
+                    } else {
+                        weights.as_mut_ptr()
+                    },
                     null_mut(),
                     options.as_mut_ptr(),
                     &mut edge_cut,

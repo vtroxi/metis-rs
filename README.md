@@ -9,4 +9,7 @@ https://github.com/scivision/METIS which uses https://github.com/KarypisLab/METI
 
 #### Compatibility
 - Requires Rust, CMake and a C99 compiler (GCC, Clang, MSVC, ...)
-- Tested to work on Windows (Win11, MSVC), Linux (Clang), [TODO] MacOS
+- **Tested on:**
+  - Windows (11) with MSVC
+  - Linux (ubuntu) with Clang
+  - MacOS (13.1 arm64)

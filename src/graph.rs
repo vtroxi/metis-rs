@@ -11,6 +11,7 @@ pub struct GraphEdge {
 pub struct GraphVertex {
     pub edges: Vec<GraphEdge>,
     pub color: u32,
+    pub original_index: u32,
 }
 
 impl GraphVertex {
@@ -56,7 +57,8 @@ impl Graph {
             vertices: vec![
                 GraphVertex {
                     edges: vec![],
-                    color: u32::MAX
+                    color: u32::MAX,
+                    original_index: 0,
                 };
                 vertex_count
             ],
@@ -95,7 +97,11 @@ impl Graph {
         for (i, v) in self.vertices.iter().enumerate() {
             let g = &mut graphs[v.color as usize];
             new_indices[i] = g.vertices.len() as u32;
-            g.vertices.push(v.clone());
+            g.vertices.push(GraphVertex{
+                edges: v.edges.clone(),
+                color: v.color,
+                original_index: i as u32, // !
+            });
         }
 
         // Update edges
