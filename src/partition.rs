@@ -64,7 +64,7 @@ impl Graph {
         unsafe {
             METIS_SetDefaultOptions(&mut options as *mut idx_t);
         }
-        options[moptions_et_METIS_OPTION_UFACTOR as usize] = 200;
+        //options[moptions_et_METIS_OPTION_UFACTOR as usize] = 200;
 
         let status = if config.method == MultilevelKWay {
             unsafe {
