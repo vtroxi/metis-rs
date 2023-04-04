@@ -9,7 +9,7 @@ fn main() {
     println!("cargo:rustc-link-lib=static=metis");
 
     let bindings = bindgen::Builder::default()
-        .header("wrapper.hpp")
+        .header("wrapper.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
         .expect("unable to generate bindings");
