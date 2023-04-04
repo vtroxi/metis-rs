@@ -7,7 +7,15 @@ fn main() {
     let mut graph =
         Graph::deserialize_metis(&mut File::open("graphs/4elt.graph").unwrap()).unwrap();
     let t1 = time::Instant::now();
-    graph.partition(&PartitioningConfig::default(), 64).unwrap();
+    graph
+        .partition(
+            &PartitioningConfig {
+                force_contiguous_partitions: Some(true),
+                ..Default::default()
+            },
+            64,
+        )
+        .unwrap();
     println!("time: {}ms", t1.elapsed().as_millis());
     println!("edge cut {}", graph.calculate_edge_cut());
     let infos = graph.partition_info();
