@@ -58,7 +58,7 @@ impl Graph {
                 GraphVertex {
                     edges: vec![],
                     color: u32::MAX,
-                    original_index: 0,
+                    original_index: u32::MAX,
                 };
                 vertex_count
             ],
@@ -97,10 +97,15 @@ impl Graph {
         for (i, v) in self.vertices.iter().enumerate() {
             let g = &mut graphs[v.color as usize];
             new_indices[i] = g.vertices.len() as u32;
-            g.vertices.push(GraphVertex{
+            g.vertices.push(GraphVertex {
                 edges: v.edges.clone(),
                 color: v.color,
-                original_index: i as u32, // !
+                // Only transfer original index if the current graph does not have original indices.
+                original_index: if v.original_index != u32::MAX {
+                    v.original_index
+                } else {
+                    i as u32
+                },
             });
         }
 
